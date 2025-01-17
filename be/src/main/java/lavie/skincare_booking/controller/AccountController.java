@@ -1,5 +1,9 @@
 package lavie.skincare_booking.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -17,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-@Controller
+@RestController
 @RequestMapping("/account")
 @RequiredArgsConstructor
 @Validated
@@ -25,6 +29,8 @@ public class AccountController {
 
     private final AccountService accountService;
 
+    @Operation(summary = "Register new account",
+            description = "Creates a new user account and sends verification email")
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) throws MessagingException {
         RegisterResponse response = accountService.register(request);
@@ -32,12 +38,16 @@ public class AccountController {
                 .body(response);
     }
 
+    @Operation(summary = "Authenticate user",
+            description = "Authenticates user and returns access and refresh tokens")
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(@Valid @RequestBody AuthenticationRequest request) {
         AuthenticationResponse response = accountService.authenticate(request);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Verify email address",
+            description = "Verifies user's email address using the token sent via email")
     @GetMapping("/verify")
     public String verifyEmail(@RequestParam String token, Model model) {
         try {
@@ -51,12 +61,16 @@ public class AccountController {
         return "verification-result";
     }
 
+    @Operation(summary = "Resend verification email",
+            description = "Sends a new verification email with fresh token")
     @PostMapping("/resend-verification")
     public ResponseEntity<Void> resendVerification(@RequestParam String email) throws MessagingException {
         accountService.resendVerificationEmail(email);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Refresh access token",
+            description = "Generates new access token using valid refresh token")
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthenticationResponse> refreshToken(HttpServletRequest request) {
         AuthenticationResponse refreshTokenResponse = accountService.refreshToken(request);
