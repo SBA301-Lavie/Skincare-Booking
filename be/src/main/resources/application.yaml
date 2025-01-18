@@ -32,3 +32,5 @@ spring:
           auth: true
           starttls:
             enable: true
+  cloudinary:
+    url: ${CLOUDINARY_URL}
